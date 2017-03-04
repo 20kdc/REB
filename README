@@ -29,13 +29,25 @@ The advantages?
 
 -- Build Instructions:
 
-make clean
+configure # This is an interactive console Lua program, for lack of any better ideas
 
-then one of:
- make REB_PORT=unix
- make REB_PORT=stdc
+At this point, adjust reb_config.h according to configure's advice & your own needs.
+The values in there right now are more or less dependent on whatever I was doing last, and perhaps 
+ generation of that file should be left to configure in future.
+
+Finally: make clean && make
+
+-- For Android Build:
+
+Run through the instructions for a standard Unix-like build, including a full make.
+This is to ensure generated headers exist.
+Then clean up object files without cleaning generated headers.
+Finally, use the provided Android NDK-friendly makefile in jni/.
 
 -- For Windows Users:
+
+Firstly, ensure reb_config.h is set correctly.
+That is, no custom allocator, reasonable numeric type, etc.
 
 Concatenate reb_cmds_base.h, ports/stdc/reb_cmds_stdc.h, and reb_cmds_foot.h into gen/reb_cmds.h.
 Concatenate reb_funcs_base.h, ports/stdc/reb_funcs_stdc.h, and reb_funcs_foot.h into gen/reb_funcs.h.

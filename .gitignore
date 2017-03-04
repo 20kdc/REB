@@ -18,10 +18,12 @@ tools/help
 tools/rebhelpc
 tools/buildhelp2.sh
 
+!jni
+!jni/Android.mk
+
 !.gitignore
 !Makefile.template
 !Makefile.template.zpu
 !configure
 !LICENCE
 !README
-!jni/Android.mk
