@@ -1,0 +1,70 @@
+"Recovery Basic" is a BASIC,
+ which acts similarly to the old-style BASICs.
+
+...by which I mean, of course, that it takes all the worst aspects.
+
+Firstly: Line numbers and a console prompt.
+         (You get SAVE and LOAD, but only if your reb_io module 
+           supports opening files.)
+Second, your only control construct is GOTO and IF.
+Plus, your function set is somewhat limited.
+Third, everything is only parsed as it's interpreted.
+Fourth,
+"8 * -2" sets line 8 to "* -2", "print 8 * -2" prints "0",
+ and "print 8 * (-2)" prints "-16".
+
+The advantages?
+1. It's portable.
+   The IO module and main() are in
+    "ports/$(REB_PORT)/reb_io_$(REB_PORT).c".
+2. It's relatively easy to add new commands and functions.
+   System-specific commands and functions should be in the port's set.
+   At build-time, the base set and port's set of commands and functions 
+    are appended together.
+3. The "unix" port gets some syscalls. (TODO: More syscalls.)
+4. It is possible to set an interpreter-wide memory limit using the 
+    custom allocator. 
+   (This also serves as a debugging tool,
+     and a way of porting Recovery Basic to obscure platforms.)
+
+-- Build Instructions:
+
+make clean
+
+then one of:
+ make REB_PORT=unix
+ make REB_PORT=stdc
+
+-- For Windows Users:
+
+Concatenate reb_cmds_base.h, ports/stdc/reb_cmds_stdc.h, and reb_cmds_foot.h into gen/reb_cmds.h.
+Concatenate reb_funcs_base.h, ports/stdc/reb_funcs_stdc.h, and reb_funcs_foot.h into gen/reb_funcs.h.
+
+Compile with all the C files in the root directory, and all the C files in ports/stdc.
+
+This should work, but I'm unsure.
+
+-- Licence
+
+Read "LICENCE"
+
+but as a backup...
+// I, 20kdc, release this code into the public domain.
+// I make no guarantees or provide any warranty,
+// implied or otherwise, with this code.
+
+-- Example Program
+
+99 Bottles Of Beer, in 10 lines.
+Oh, and I forgot to explicitly mention: you don't get FOR loops, either.
+
+1 bottles = 99
+2 print bottles;" bottles of beer, sitting on the wall,"
+3 print bottles;" bottles of beer, sitting on the wall,"
+4 print "Take one down, and pass it around,"
+5 bottles = bottles - 1
+6 if bottles = 0 then 10
+7 print "There'll be ";bottles;" bottles of beer, sitting on the wall."
+8 input a$
+9 goto 2
+10 print "There won't be any bottles of beer, sitting on the wall."

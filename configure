@@ -1,0 +1,83 @@
+#!/usr/bin/lua
+
+local zpu = false
+local port = nil
+
+local function got_line(l)
+ if l == "#REB_PORT" then
+  return "REB_PORT=" .. port
+ end
+ if l == "#ZPU_TOOLCHAIN" then
+  return "ZPU_TOOLCHAIN=" .. zpu .. "/bin/zpu-elf-"
+ end
+ return l
+end
+local function getline(prompt)
+ io.write(prompt)
+ io.flush()
+ return io.read()
+end
+local function choice(a, c)
+ a = a .. " ("
+ for k, v in ipairs(c) do
+  if k > 1 then a = a .. "/" end
+  a = a .. v
+ end
+ a = a .. "):"
+ while true do
+  local s = getline(a)
+  for _, v in ipairs(c) do
+   if s == v then
+    return s
+   end
+  end
+ end
+end
+local function flag(a)
+ return choice(a, {"y", "n"}) == "y"
+end
+
+print("Recovery BASIC Configuration Assistant")
+zpu = flag("Zylin ZPU Build (Use local zpu-elf chain)?")
+local flags = {}
+if not zpu then
+ port = choice("REB Port?", {"stdc", "unix"})
+ flags["REB_IO_NEWLINE_ENDS_READ"] = 1
+ flags["REB_MEM_CONFIG_CUSTOMALLOCATOR"] = 2
+else
+ port = "zpu_" .. choice("ZPU Board?", {"phi", "comu"})
+ zpu = getline("ZPU Toolchain (contains bin, include)?")
+ if port == "zpu_comu" then
+  -- Computech DIO ends messages with "\n", and it needs the speedup for practical use.
+  flags["REB_IO_NEWLINE_ENDS_READ"] = 3
+ else
+  flags["REB_IO_NEWLINE_ENDS_READ"] = 1
+ end
+ flags["REB_MEM_CONFIG_CUSTOMALLOCATOR"] = 4
+end
+
+local levels = {
+ " is unsupported on this platform.",
+ " is not recommended on this platform.",
+ " is recommended on this platform.",
+ " is required on this platform.",
+}
+
+-- write out Makefile
+local za = ""
+if zpu then
+ za = ".zpu"
+end
+local f = io.open("Makefile.template" .. za, "r")
+local f2 = io.open("Makefile", "w")
+local l = f:read()
+while l do
+ f2:write(got_line(l) .. "\n")
+ l = f:read()
+end
+f2:close()
+f:close()
+print("Done! You may need to edit reb_config.h before continuing, due to:")
+for k, v in pairs(flags) do
+ print(k .. levels[v])
+end

@@ -1,0 +1,27 @@
+/*
+!*.c
+!*.S
+!*.h
+
+# this is "fun"
+!ports
+!ports/*
+!ports/*/*.c
+!ports/*/*.S
+!ports/*/*.h
+ports/*/*.o
+
+!tools
+!tools/*.c
+tools/*.o
+tools/help
+tools/rebhelpc
+tools/buildhelp2.sh
+
+!.gitignore
+!Makefile.template
+!Makefile.template.zpu
+!configure
+!LICENCE
+!README
+!jni/Android.mk

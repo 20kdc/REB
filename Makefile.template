@@ -1,0 +1,41 @@
+MKDIR=mkdir -p
+CP=cp
+RM=rm -f
+CC=gcc
+#REB_PORT
+
+CCFLAGS=-std=c99 -DREB_PORT="\"$(REB_PORT)\""
+
+BASEOBJ=lookuptree.o reb_cmds.o reb_exec.o reb_exec_cmd.o reb_funcs.o reb_mem.o reb_repl.o reb_util.o
+PORTOBJ=ports/$(REB_PORT)/reb_cmds_$(REB_PORT).o ports/$(REB_PORT)/reb_funcs_$(REB_PORT).o ports/$(REB_PORT)/reb_io_$(REB_PORT).o
+HEADERS=lookuptree.h reb.h reb_cmds_base.h reb_cmds_foot.h reb_config.h reb_io.h reb_mem.h reb_funcs_base.h reb_funcs_foot.h
+PORTHEAD=ports/$(REB_PORT)/reb_cmds_$(REB_PORT).h ports/$(REB_PORT)/reb_funcs_$(REB_PORT).h
+GENHEAD=gen/reb_cmds.h gen/reb_funcs.h
+
+build: .SANITYCHECK $(GENHEAD) dist/reb
+
+clean: clean-port
+	$(RM) $(BASEOBJ) $(GENHEAD) reb_cmds.h
+
+clean-port:
+	if test -n '$(REB_PORT)'; then $(RM) $(PORTOBJ); fi
+
+all: .SANITYCHECK clean build
+
+dist/reb: .SANITYCHECK $(BASEOBJ) $(PORTOBJ) $(HEADERS) $(PORTHEAD) $(GENHEAD)
+	$(MKDIR) dist
+	$(CC) $(CCFLAGS) $(BASEOBJ) $(PORTOBJ) -o dist/reb
+
+.c.o: .SANITYCHECK $(GENHEAD) $(HEADERS) $(PORTHEAD)
+	$(CC) $(CCFLAGS) -c -o $@ $<
+
+gen/reb_cmds.h: .SANITYCHECK reb_cmds_base.h ports/$(REB_PORT)/reb_cmds_$(REB_PORT).h reb_cmds_foot.h
+	$(MKDIR) gen
+	cat reb_cmds_base.h ports/$(REB_PORT)/reb_cmds_$(REB_PORT).h reb_cmds_foot.h > gen/reb_cmds.h
+
+gen/reb_funcs.h: .SANITYCHECK reb_funcs_base.h ports/$(REB_PORT)/reb_funcs_$(REB_PORT).h reb_funcs_foot.h
+	$(MKDIR) gen
+	cat reb_funcs_base.h ports/$(REB_PORT)/reb_funcs_$(REB_PORT).h reb_funcs_foot.h > gen/reb_funcs.h
+
+.SANITYCHECK:
+	if test -z '$(REB_PORT)'; then echo 'you must specify a port. example: make REB_PORT=unix'; exit 1; fi

@@ -1,0 +1,46 @@
+#ZPU_TOOLCHAIN
+MKDIR=mkdir -p
+CP=cp
+RM=rm -f
+CC=$(ZPU_TOOLCHAIN)gcc
+OBJCOPY=$(ZPU_TOOLCHAIN)objcopy
+#REB_PORT
+
+CCFLAGS=-std=c99 -O3 -nostdlib -DREB_PORT="\"$(REB_PORT)\""
+
+BASEOBJ=lookuptree.o reb_cmds.o reb_exec.o reb_exec_cmd.o reb_funcs.o reb_mem.o reb_repl.o reb_util.o
+PORTOBJ=ports/$(REB_PORT)/reb_cmds_$(REB_PORT).o ports/$(REB_PORT)/reb_funcs_$(REB_PORT).o ports/$(REB_PORT)/reb_io_$(REB_PORT).o
+HEADERS=lookuptree.h reb.h reb_cmds_base.h reb_cmds_foot.h reb_config.h reb_io.h reb_mem.h reb_funcs_base.h reb_funcs_foot.h
+PORTHEAD=ports/$(REB_PORT)/reb_cmds_$(REB_PORT).h ports/$(REB_PORT)/reb_funcs_$(REB_PORT).h ports/$(REB_PORT)/stdint.h
+GENHEAD=gen/reb_cmds.h gen/reb_funcs.h
+
+build: .SANITYCHECK $(GENHEAD) dist/reb dist/reb.bin
+
+clean: clean-port
+	$(RM) $(BASEOBJ) $(GENHEAD) reb_cmds.h
+
+clean-port:
+	if test -n '$(REB_PORT)'; then $(RM) $(PORTOBJ); fi
+
+all: .SANITYCHECK clean build
+
+dist/reb.bin: .SANITYCHECK dist/reb $(BASEOBJ) $(PORTOBJ) $(HEADERS) $(PORTHEAD) $(GENHEAD)
+	$(OBJCOPY) -O binary dist/reb dist/reb.bin
+
+dist/reb: .SANITYCHECK $(BASEOBJ) $(PORTOBJ) $(HEADERS) $(PORTHEAD) $(GENHEAD)
+	$(MKDIR) dist
+	$(CC) $(CCFLAGS) ports/$(REB_PORT)/minilibc.S $(BASEOBJ) $(PORTOBJ) -o dist/reb
+
+.c.o: .SANITYCHECK $(GENHEAD) $(HEADERS) $(PORTHEAD)
+	$(CC) $(CCFLAGS) -I ports/$(REB_PORT) -c -o $@ $<
+
+gen/reb_cmds.h: .SANITYCHECK reb_cmds_base.h ports/$(REB_PORT)/reb_cmds_$(REB_PORT).h reb_cmds_foot.h
+	$(MKDIR) gen
+	cat reb_cmds_base.h ports/$(REB_PORT)/reb_cmds_$(REB_PORT).h reb_cmds_foot.h > gen/reb_cmds.h
+
+gen/reb_funcs.h: .SANITYCHECK reb_funcs_base.h ports/$(REB_PORT)/reb_funcs_$(REB_PORT).h reb_funcs_foot.h
+	$(MKDIR) gen
+	cat reb_funcs_base.h ports/$(REB_PORT)/reb_funcs_$(REB_PORT).h reb_funcs_foot.h > gen/reb_funcs.h
+
+.SANITYCHECK:
+	if test -z '$(REB_PORT)'; then echo 'you must specify a port. example: make REB_PORT=unix'; exit 1; fi
