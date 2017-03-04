@@ -10,8 +10,8 @@ Second, your only control construct is GOTO and IF.
 Plus, your function set is somewhat limited.
 Third, everything is only parsed as it's interpreted.
 Fourth,
-"8 * -2" sets line 8 to "* -2", "print 8 * -2" prints "0",
- and "print 8 * (-2)" prints "-16".
+"8 * -2" sets line 8 to "* -2", "print 8 * -2" prints "-2",
+ "print -2 * 8" prints "-16" and "print 8 * (-2)" also prints "-16".
 
 The advantages?
 1. It's portable.

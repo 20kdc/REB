@@ -34,12 +34,12 @@
 //                  in order to actually find out callstack information.
 //                  There's also a few sanity asserts in there too even with debug off.
 
-#define REB_MEM_CONFIG_CUSTOMALLOCATOR 32768
+// #define REB_MEM_CONFIG_CUSTOMALLOCATOR 32768
 
 // Platform-specific optimization to make reb_gets_internal a lot faster.
 // Define if, and only if, the reb_io implementation in use will always end reads when it hits a '\n'.
 // Undefine if this is not the case.
-#define REB_IO_NEWLINE_ENDS_READ
+// #define REB_IO_NEWLINE_ENDS_READ
 
 // Useful if you want to reduce memory usage.
 // Otherwise, don't bother.
